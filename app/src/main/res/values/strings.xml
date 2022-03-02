@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Wordle-Compose</string>
+    <string name="how_to_play_title">How To Play</string>
+    <string name="settings_title">Settings</string>
+    <string name="stats_title">Statistics</string>
+    <string name="play_title">Play</string>
+
+    <string name="navigation_icon">Navigation Icon</string>
+</resources>
