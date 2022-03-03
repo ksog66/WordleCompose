@@ -71,7 +71,9 @@ fun WordleNavHost(
         startDestination = WordleDrawerTab.PLAY.name
     ) {
         composable(WordleDrawerTab.PLAY.name) {
-            PlayRoute()
+            PlayRoute(
+                openDrawer = openDrawer
+            )
         }
 
         composable(WordleDrawerTab.HOW_TO_PLAY.name) {
