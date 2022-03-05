@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordle_compose.data.AlphabetState
+import com.example.wordle_compose.ui.play.generateDummyAnswerList
 import com.example.wordle_compose.ui.theme.*
 
 @Composable
@@ -81,6 +82,11 @@ fun WordleBox(letter: Char, alphabetState: AlphabetState) {
     }
 }
 
+@Preview
+@Composable
+fun WordleGridPreview() {
+    WordleGrid(answers = generateDummyAnswerList())
+}
 @Preview
 @Composable
 fun WordleBoxPreview() {

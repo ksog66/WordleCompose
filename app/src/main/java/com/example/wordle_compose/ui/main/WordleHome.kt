@@ -10,8 +10,11 @@ import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,6 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.wordle_compose.R
+import com.example.wordle_compose.data.AlphabetState
+import com.example.wordle_compose.ui.WordleViewModel
+import com.example.wordle_compose.ui.WordleViewModelFactory
 import com.example.wordle_compose.ui.how_to_play.HowToPlayRoute
 import com.example.wordle_compose.ui.play.PlayRoute
 import com.example.wordle_compose.ui.settings.SettingsRoute
@@ -66,13 +72,23 @@ fun WordleNavHost(
     navController: NavHostController,
     openDrawer: () -> Unit = {}
 ) {
+    val wordleViewModel: WordleViewModel = viewModel(
+        factory = WordleViewModelFactory()
+    )
     NavHost(
         navController = navController,
         startDestination = WordleDrawerTab.PLAY.name
     ) {
+
         composable(WordleDrawerTab.PLAY.name) {
+
+            val keyboardLetters:Map<Char,AlphabetState> by wordleViewModel.keyboardMap.observeAsState(mapOf())
             PlayRoute(
-                openDrawer = openDrawer
+                openDrawer = openDrawer,
+                keyboardLetters = keyboardLetters,
+                onBackspaceClick = {},
+                onLetterClick = {},
+                onEnterClick = {}
             )
         }
 

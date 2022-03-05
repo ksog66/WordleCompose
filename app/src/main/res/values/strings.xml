@@ -6,4 +6,6 @@
     <string name="play_title">Play</string>
 
     <string name="navigation_icon">Navigation Icon</string>
+
+    <string name="wordle_literal">WORDLE</string>
 </resources>

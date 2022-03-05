@@ -1,7 +1,9 @@
 package com.example.wordle_compose.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -16,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wordle_compose.data.AlphabetState
@@ -79,7 +80,7 @@ fun Alphabet(
             .width(IntrinsicSize.Max)
             .padding(2.dp)
             .clip(MaterialTheme.shapes.small)
-            .padding(horizontal = 2.dp, vertical = 4.dp)
+            .border(BorderStroke(1.dp, backgroundColor.value))
             .background(color = backgroundColor.value)
             .clickable {
                 if (letter == '_') {
@@ -98,7 +99,7 @@ fun Alphabet(
                 text = "Enter",
                 style = MaterialTheme.typography.body2,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(IntrinsicSize.Max).padding(horizontal = 2.dp, vertical = 4.dp),
+                modifier = Modifier.width(IntrinsicSize.Max).padding(horizontal = 4.dp, vertical = 4.dp),
                 textAlign = TextAlign.Center,
                 color = fontTextColor.value
             )
@@ -107,7 +108,7 @@ fun Alphabet(
                 imageVector = Icons.Outlined.Backspace,
                 contentDescription = null,
                 tint = if (MaterialTheme.colors.isLight) Color.Black else Color.White,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(24.dp).padding(horizontal = 4.dp)
             )
         } else {
             Text(
