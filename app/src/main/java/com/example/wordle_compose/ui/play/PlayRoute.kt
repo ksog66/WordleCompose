@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,12 +18,14 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.wordle_compose.R
 import com.example.wordle_compose.data.AlphabetState
+import com.example.wordle_compose.data.model.Guess
 import com.example.wordle_compose.ui.components.KeyboardComp
 import com.example.wordle_compose.ui.components.WordleGrid
 
 @Composable
 fun PlayRoute(
-    keyboardLetters:Map<Char,AlphabetState>,
+    keyboardLetters: Map<Char, AlphabetState>,
+    guess: List<Guess>,
     openDrawer: () -> Unit,
     onLetterClick: (Char) -> Unit,
     onEnterClick: () -> Unit,
@@ -38,14 +39,22 @@ fun PlayRoute(
             WordleTopAppBar(openDrawer)
         }
     ) { innerPadding ->
-        WordleBody(Modifier.padding(innerPadding),keyboardLetters, onLetterClick,onEnterClick, onBackspaceClick)
+        WordleBody(
+            Modifier.padding(innerPadding),
+            keyboardLetters,
+            guess,
+            onLetterClick,
+            onEnterClick,
+            onBackspaceClick
+        )
     }
 }
 
 @Composable
 fun WordleBody(
     modifier: Modifier = Modifier,
-    keyboardLetters:Map<Char,AlphabetState>,
+    keyboardLetters: Map<Char, AlphabetState>,
+    guess: List<Guess>,
     onLetterClick: (Char) -> Unit,
     onEnterClick: () -> Unit,
     onBackspaceClick: () -> Unit
@@ -56,22 +65,21 @@ fun WordleBody(
     ) {
         Spacer(modifier = Modifier.height(25.dp))
 
-        WordleGrid(answers = generateDummyAnswerList())
+        WordleGrid(guess = guess)
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(50.dp))
 
         KeyboardComp(alphabet = keyboardLetters, onLetterClick, onEnterClick, onBackspaceClick)
     }
 }
 
-fun generateDummyAnswerList(): Map<String,List<AlphabetState>> {
-    val answerMap = mutableMapOf<String,List<AlphabetState>>(
-        "ASDFG" to List(5) {AlphabetState.NONE},
-        "CLOWN" to List(5) {AlphabetState.NOT_PRESENT},
-        "MOURN" to List(5) {AlphabetState.CORRECT_POSITION},
-        "CLICK" to List(5) {AlphabetState.NONE},
-        "GREAT" to List(5) {AlphabetState.WRONG_POSITION},
-        "SNAKE" to List(5) {AlphabetState.NOT_PRESENT}
+fun generateDummyAnswerList(): List<Guess> {
+    val answerMap = listOf(
+        Guess(CharArray(5) { ' ' }),
+        Guess(CharArray(5) { ' ' }),
+        Guess(CharArray(5) { ' ' }),
+        Guess(CharArray(5) { ' ' }),
+        Guess(CharArray(5) { ' ' })
     )
 
     return answerMap
@@ -129,18 +137,19 @@ fun WordleTopAppBar(openDrawer: () -> Unit) {
 @Preview
 @Composable
 fun WordleHomePreview() {
-    PlayRoute(generateDummyKeyboardLetters(),{},{},{},{})
+    PlayRoute(generateDummyKeyboardLetters(), generateDummyAnswerList(), {}, {}, {}, {})
 }
 
-private fun generateDummyKeyboardLetters() :Map<Char,AlphabetState> {
-    val alphabetMap = mutableMapOf<Char,AlphabetState>()
+private fun generateDummyKeyboardLetters(): Map<Char, AlphabetState> {
+    val alphabetMap = mutableMapOf<Char, AlphabetState>()
 
     for (i in 'A'..'Z') {
-        alphabetMap.put(i,AlphabetState.values().random())
+        alphabetMap.put(i, AlphabetState.values().random())
     }
 
     return alphabetMap
 }
+
 @Preview
 @Composable
 fun WordleTopAppBarPreview() {

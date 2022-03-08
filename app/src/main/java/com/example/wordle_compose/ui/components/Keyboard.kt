@@ -44,9 +44,9 @@ fun KeyboardComp(
                     Alphabet(
                         letter = it,
                         alphabetState = alphabet[it] ?: AlphabetState.NONE,
-                        onLetterClick = {},
-                        onBackspaceClick = {},
-                        onEnterClick = {})
+                        onLetterClick = onLetterClick,
+                        onBackspaceClick = onBackspaceClick,
+                        onEnterClick = onEnterClick)
                 }
             }
         }

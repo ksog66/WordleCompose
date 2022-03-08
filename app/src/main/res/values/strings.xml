@@ -8,4 +8,6 @@
     <string name="navigation_icon">Navigation Icon</string>
 
     <string name="wordle_literal">WORDLE</string>
+
+    <string name="word_too_short">Too short of a word</string>
 </resources>

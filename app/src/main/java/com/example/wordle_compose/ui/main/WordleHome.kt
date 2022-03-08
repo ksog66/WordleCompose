@@ -1,5 +1,6 @@
 package com.example.wordle_compose.ui.main
 
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ModalDrawer
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -23,6 +25,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.wordle_compose.R
 import com.example.wordle_compose.data.AlphabetState
+import com.example.wordle_compose.data.AppContainer
+import com.example.wordle_compose.data.model.Guess
+import com.example.wordle_compose.data.repository.WordRepository
+import com.example.wordle_compose.ui.ToastEvent
 import com.example.wordle_compose.ui.WordleViewModel
 import com.example.wordle_compose.ui.WordleViewModelFactory
 import com.example.wordle_compose.ui.how_to_play.HowToPlayRoute
@@ -33,7 +39,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun WordleHomeScreen() {
+fun WordleHomeScreen(appContainer:AppContainer) {
     val allScreens = WordleDrawerTab.values().toList()
     val navController = rememberNavController()
     val backStackEntry = navController.currentBackStackEntryAsState()
@@ -61,6 +67,7 @@ fun WordleHomeScreen() {
         }
     ) {
         WordleNavHost(
+            appContainer = appContainer,
             navController = navController,
             openDrawer = { coroutineScope.launch { drawerState.open() } }
         )
@@ -69,11 +76,12 @@ fun WordleHomeScreen() {
 
 @Composable
 fun WordleNavHost(
+    appContainer: AppContainer,
     navController: NavHostController,
     openDrawer: () -> Unit = {}
 ) {
     val wordleViewModel: WordleViewModel = viewModel(
-        factory = WordleViewModelFactory()
+        factory = WordleViewModelFactory(appContainer.wordRepository)
     )
     NavHost(
         navController = navController,
@@ -83,12 +91,14 @@ fun WordleNavHost(
         composable(WordleDrawerTab.PLAY.name) {
 
             val keyboardLetters:Map<Char,AlphabetState> by wordleViewModel.keyboardMap.observeAsState(mapOf())
+            val guessList:List<Guess> by wordleViewModel.guessList.observeAsState(emptyList())
             PlayRoute(
                 openDrawer = openDrawer,
                 keyboardLetters = keyboardLetters,
-                onBackspaceClick = {},
-                onLetterClick = {},
-                onEnterClick = {}
+                guess = guessList,
+                onBackspaceClick = {wordleViewModel.clearGuessChar()},
+                onLetterClick = {wordleViewModel.enterChar(it)},
+                onEnterClick = {wordleViewModel.submitAnswer()}
             )
         }
 

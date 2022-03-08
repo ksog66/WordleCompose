@@ -8,14 +8,16 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.wordle_compose.WordleApplication
 import com.example.wordle_compose.ui.theme.WordleComposeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val appContainer = (application as WordleApplication).appContainer
         setContent {
             WordleComposeTheme {
-                WordleHomeScreen()
+                WordleHomeScreen(appContainer)
             }
         }
     }

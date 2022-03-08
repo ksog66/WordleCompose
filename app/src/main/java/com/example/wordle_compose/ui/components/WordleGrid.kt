@@ -18,16 +18,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordle_compose.data.AlphabetState
+import com.example.wordle_compose.data.model.Guess
 import com.example.wordle_compose.ui.play.generateDummyAnswerList
 import com.example.wordle_compose.ui.theme.*
 
 @Composable
-fun WordleGrid(answers:Map<String,List<AlphabetState>>) {
+fun WordleGrid(guess: List<Guess>) {
     Column {
-        answers.keys.forEach { answer ->
+        guess.forEach { answer ->
             Row {
-                answer.forEachIndexed { index, char ->
-                    val letterState = answers[answer]?.get(index) ?: AlphabetState.NONE
+                answer.word.forEachIndexed { index, char ->
+                    val letterState = answer.letterStats[index]
                     WordleBox(letter = char, alphabetState = letterState)
                 }
             }
@@ -85,7 +86,7 @@ fun WordleBox(letter: Char, alphabetState: AlphabetState) {
 @Preview
 @Composable
 fun WordleGridPreview() {
-    WordleGrid(answers = generateDummyAnswerList())
+    WordleGrid(guess = generateDummyAnswerList())
 }
 @Preview
 @Composable
