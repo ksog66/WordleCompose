@@ -1,13 +1,13 @@
 package com.example.wordle_compose.ui
 
-import androidx.compose.ui.text.toUpperCase
 import androidx.lifecycle.*
-import com.example.wordle_compose.R
 import com.example.wordle_compose.data.AlphabetState
 import com.example.wordle_compose.data.GameState
 import com.example.wordle_compose.data.WordStatus
 import com.example.wordle_compose.data.model.Guess
 import com.example.wordle_compose.data.repository.WordRepository
+import com.example.wordle_compose.utils.toGridArray
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class WordleViewModel(
     private val wordRepository: WordRepository
@@ -16,6 +16,7 @@ class WordleViewModel(
     companion object {
         private const val INIT_WORD_SIZE = 0
         private const val FINAL_WORD_SIZE = 5
+        private const val MAX_GUESS_COUNT = 6
     }
 
     private val gameState = MutableLiveData<GameState>()
@@ -31,6 +32,10 @@ class WordleViewModel(
     }
 
     init {
+        initGameState()
+    }
+
+    private fun initGameState() {
         val originalWord = wordRepository.getRandomWord()
         val initialKeyWord = generateInitialKeyBoard()
         val initGuessList = generateInitialGuessList()
@@ -46,7 +51,8 @@ class WordleViewModel(
 
         if (currentWord.length == INIT_WORD_SIZE) return
 
-        gameState.value = gameState.value?.copy(currentWord = currentWord.dropLast(1))
+        val newWord = currentWord.dropLast(1)
+        updateGameState(newWord)
     }
 
     fun enterChar(letter: Char) {
@@ -54,17 +60,16 @@ class WordleViewModel(
 
         if (currentState?.currentWord?.length == FINAL_WORD_SIZE) return
 
-        val newWord = currentState?.currentWord ?: "" + letter.toString()
-        val currentGuess = currentState?.guess?.last()?.copy(word = newWord.toCharArray()) ?: return
+        val newWord = (currentState?.currentWord ?: "") + letter.toString()
 
-        gameState.value = gameState.value?.copy(
-            currentWord = newWord,
-            guess = currentState.guess.subList(0,currentState.guess.size-1) + currentGuess
-        )
-
+        updateGameState(newWord)
     }
 
     fun submitAnswer() {
+        if (gameState.value?.guessNumber == MAX_GUESS_COUNT) {
+            initGameState()
+            return
+        }
         val currentWord = gameState.value?.currentWord ?: return
 
         if (currentWord.length < FINAL_WORD_SIZE) {
@@ -83,16 +88,27 @@ class WordleViewModel(
                         word = currentWord.toCharArray(),
                         letterStats = wordStatus.letterStatus
                     )
-                    updateKeyboardState(newGuess)
+                    val guessList = currentGameState.guess.toMutableList()
+                    guessList.set(currentGameState.guessNumber-1,newGuess)
                     gameState.value =
-                        currentGameState.copy(guess = currentGameState.guess + newGuess)
+                        currentGameState.copy(guessNumber = currentGameState.guessNumber + 1, guess = guessList.toList(), currentWord = null, keyboardState = updateKeyboardState(newGuess))
                 }
             }
         }
     }
 
-    private fun updateKeyboardState(guess: Guess) {
-        val keyboardState = gameState.value?.keyboardState?.toMutableMap() ?: return
+    private fun updateGameState(newWord:String) {
+        val currentState = gameState.value
+        val newGuess = Guess(word = newWord.toGridArray())
+        val newList = currentState?.guess?.toMutableList()
+        newList?.set(currentState.guessNumber-1,newGuess)
+        gameState.value = gameState.value?.copy(
+            currentWord = newWord,
+            guess = newList?.toList() ?: listOf()
+        )
+    }
+    private fun updateKeyboardState(guess: Guess): Map<Char, AlphabetState> {
+        val keyboardState = gameState.value?.keyboardState?.toMutableMap() ?: return mapOf()
 
         guess.word.filter { keyboardState[it] != AlphabetState.CORRECT_POSITION }
             .forEachIndexed { index, letter ->
@@ -108,7 +124,7 @@ class WordleViewModel(
                 }
             }
 
-        gameState.value = gameState.value?.copy(keyboardState = keyboardState.toMap())
+        return keyboardState
     }
 
     private fun getWordStatus(guessedWord: String): WordStatus {
@@ -137,7 +153,7 @@ class WordleViewModel(
                     letterState = AlphabetState.WRONG_POSITION
                 }
             }
-            lettersState[guessIndex] = letterState
+            lettersState.add(letterState)
         }
 
         return lettersState
@@ -155,6 +171,7 @@ class WordleViewModel(
 
     private fun generateInitialGuessList(): List<Guess> {
         return mutableListOf(
+            Guess(CharArray(5) { ' ' }),
             Guess(CharArray(5) { ' ' }),
             Guess(CharArray(5) { ' ' }),
             Guess(CharArray(5) { ' ' }),

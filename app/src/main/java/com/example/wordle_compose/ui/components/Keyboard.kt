@@ -108,7 +108,7 @@ fun Alphabet(
                 imageVector = Icons.Outlined.Backspace,
                 contentDescription = null,
                 tint = if (MaterialTheme.colors.isLight) Color.Black else Color.White,
-                modifier = Modifier.size(24.dp).padding(horizontal = 4.dp)
+                modifier = Modifier.width(48.dp).height(24.dp).padding(horizontal = 4.dp)
             )
         } else {
             Text(
