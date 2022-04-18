@@ -19,17 +19,21 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.wordle_compose.R
 import com.example.wordle_compose.data.AlphabetState
 import com.example.wordle_compose.data.model.Guess
+import com.example.wordle_compose.ui.GameEvent
 import com.example.wordle_compose.ui.components.KeyboardComp
 import com.example.wordle_compose.ui.components.WordleGrid
+import com.example.wordle_compose.ui.main.GameDialog
 
 @Composable
 fun PlayRoute(
     keyboardLetters: Map<Char, AlphabetState>,
     guess: List<Guess>,
+    gameEvent: GameEvent,
     openDrawer: () -> Unit,
     onLetterClick: (Char) -> Unit,
     onEnterClick: () -> Unit,
-    onBackspaceClick: () -> Unit
+    onBackspaceClick: () -> Unit,
+    resetToIdleState: () -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
 
@@ -43,9 +47,11 @@ fun PlayRoute(
             Modifier.padding(innerPadding),
             keyboardLetters,
             guess,
+            gameEvent,
             onLetterClick,
             onEnterClick,
-            onBackspaceClick
+            onBackspaceClick,
+            resetToIdleState
         )
     }
 }
@@ -55,9 +61,11 @@ fun WordleBody(
     modifier: Modifier = Modifier,
     keyboardLetters: Map<Char, AlphabetState>,
     guess: List<Guess>,
+    gameEvent: GameEvent,
     onLetterClick: (Char) -> Unit,
     onEnterClick: () -> Unit,
-    onBackspaceClick: () -> Unit
+    onBackspaceClick: () -> Unit,
+    resetToIdleState: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -69,7 +77,10 @@ fun WordleBody(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        KeyboardComp(alphabet = keyboardLetters, onLetterClick, onEnterClick, onBackspaceClick)
+        Box(modifier = modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            KeyboardComp(modifier = Modifier.align(Alignment.Center),alphabet = keyboardLetters, onLetterClick, onEnterClick, onBackspaceClick)
+            GameDialog(modifier = Modifier.align(Alignment.BottomCenter),gameEvent = gameEvent) { resetToIdleState.invoke()}
+        }
     }
 }
 
@@ -137,7 +148,7 @@ fun WordleTopAppBar(openDrawer: () -> Unit) {
 @Preview
 @Composable
 fun WordleHomePreview() {
-    PlayRoute(generateDummyKeyboardLetters(), generateDummyAnswerList(), {}, {}, {}, {})
+    PlayRoute(generateDummyKeyboardLetters(), generateDummyAnswerList(),GameEvent.IdleState, {}, {}, {}, {},{})
 }
 
 private fun generateDummyKeyboardLetters(): Map<Char, AlphabetState> {

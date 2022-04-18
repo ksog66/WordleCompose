@@ -10,4 +10,6 @@
     <string name="wordle_literal">WORDLE</string>
 
     <string name="word_too_short">Too short of a word</string>
+    <string name="game_lost">Game Lost</string>
+    <string name="invalid_word">Invalid Word</string>
 </resources>

@@ -30,12 +30,13 @@ private const val KEY_ROW_3 = "_ZXCVBNM<"
 
 @Composable
 fun KeyboardComp(
+    modifier: Modifier,
     alphabet: Map<Char, AlphabetState>,
     onLetterClick: (Char) -> Unit,
     onEnterClick: () -> Unit,
     onBackspaceClick: () -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         listOf(KEY_ROW_1, KEY_ROW_2, KEY_ROW_3).forEach { keyRow ->
             Row(
                 horizontalArrangement = Arrangement.SpaceAround
@@ -126,7 +127,7 @@ fun Alphabet(
 @Preview
 @Composable
 fun KeyboardPreview() {
-    KeyboardComp(mapOf(),{},{},{})
+    KeyboardComp(Modifier,mapOf(),{},{},{})
 }
 
 @Preview

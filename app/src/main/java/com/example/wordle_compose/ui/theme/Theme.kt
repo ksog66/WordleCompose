@@ -5,6 +5,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 private val DarkColorPalette = darkColors(
     primary = Purple200,
@@ -26,6 +29,8 @@ private val LightColorPalette = lightColors(
     onSurface = Color.Black,
     */
 )
+
+var isSystemInDarkTheme by mutableStateOf(false)
 
 @Composable
 fun WordleComposeTheme(

@@ -1,5 +1,6 @@
 package com.example.wordle_compose.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.graphics.Color
 
@@ -16,3 +17,6 @@ val keyCorrectPlaceBg = Color(0XFF538D4E)
 
 val keyFontColorLight = Color.White
 val keyFontColorDark = Color.Black
+
+val colorTone1: Color get() = Color(if (isSystemInDarkTheme) 0xFFD7DADC else 0xFF1A1A1B)
+val colorTone7: Color get() = Color(if (isSystemInDarkTheme) 0xFF121213 else 0xFFFFFFFF)
