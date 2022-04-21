@@ -12,4 +12,10 @@
     <string name="word_too_short">Too short of a word</string>
     <string name="game_lost">Game Lost</string>
     <string name="invalid_word">Invalid Word</string>
+
+    <string name="play_again">Play Again</string>
+    <string name="oops_better_luck_next_time">Oops! Better Luck Next Time</string>
+    <string name="original_word_was">Original Word:</string>
+
+    <string name="close_desc">Close Dialog</string>
 </resources>

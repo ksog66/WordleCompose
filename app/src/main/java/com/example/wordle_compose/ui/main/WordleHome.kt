@@ -1,9 +1,6 @@
 package com.example.wordle_compose.ui.main
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.icons.Icons
@@ -15,10 +12,6 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -31,9 +24,11 @@ import com.example.wordle_compose.data.AlphabetState
 import com.example.wordle_compose.data.AppContainer
 import com.example.wordle_compose.data.model.Guess
 import com.example.wordle_compose.ui.GameEvent
+import com.example.wordle_compose.ui.GameMessage
 import com.example.wordle_compose.ui.WordleViewModel
 import com.example.wordle_compose.ui.WordleViewModelFactory
 import com.example.wordle_compose.ui.how_to_play.HowToPlayRoute
+import com.example.wordle_compose.ui.play.GameEventScreen
 import com.example.wordle_compose.ui.play.PlayRoute
 import com.example.wordle_compose.ui.settings.SettingsRoute
 import com.example.wordle_compose.ui.statistics.StatisticsRoute
@@ -85,7 +80,6 @@ fun WordleNavHost(
     val wordleViewModel: WordleViewModel = viewModel(
         factory = WordleViewModelFactory(appContainer.wordRepository)
     )
-    val gameEvent : GameEvent by wordleViewModel.gameEvent.observeAsState(GameEvent.IdleState)
 
     NavHost(
         navController = navController,
@@ -95,6 +89,13 @@ fun WordleNavHost(
 
             val keyboardLetters:Map<Char,AlphabetState> by wordleViewModel.keyboardMap.observeAsState(mapOf())
             val guessList:List<Guess> by wordleViewModel.guessList.observeAsState(emptyList())
+            val gameMessageEvent : GameMessage by wordleViewModel.gameMessageEvent.observeAsState(GameMessage.IdleState)
+            val gameEvent: GameEvent by wordleViewModel.gameEvent.observeAsState(GameEvent.InitialState)
+
+            GameEventScreen(gameEvent) {
+                wordleViewModel.initGameState()
+            }
+
             PlayRoute(
                 openDrawer = openDrawer,
                 keyboardLetters = keyboardLetters,
@@ -102,7 +103,7 @@ fun WordleNavHost(
                 onBackspaceClick = {wordleViewModel.clearGuessChar()},
                 onLetterClick = {wordleViewModel.enterChar(it)},
                 onEnterClick = {wordleViewModel.submitAnswer()},
-                gameEvent = gameEvent,
+                gameMessage = gameMessageEvent,
                 resetToIdleState = { wordleViewModel.setGameEventIdle() }
             )
         }

@@ -1,6 +1,7 @@
 package com.example.wordle_compose.data
 
 import com.example.wordle_compose.data.model.Guess
+import com.example.wordle_compose.ui.GameEvent
 import kotlin.properties.Delegates
 
 enum class AlphabetState {
@@ -14,7 +15,7 @@ data class GameState(
     val originalAnswer:String,
     val keyboardState: Map<Char,AlphabetState>,
     val guess: List<Guess>,
-    val guessNumber: Int = 1,
+    val guessNumber: Int = 0,
     val currentWord:String? = null,
 )
 

@@ -13,46 +13,39 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wordle_compose.R
-import com.example.wordle_compose.ui.GameEvent
+import com.example.wordle_compose.ui.GameMessage
 import com.example.wordle_compose.ui.theme.colorTone1
 import com.example.wordle_compose.ui.theme.colorTone7
 import kotlinx.coroutines.delay
 
 @Composable
-fun GameDialog(modifier: Modifier,gameEvent: GameEvent,onDismiss: () ->Unit) {
-    when (gameEvent) {
-        is GameEvent.GameLost -> {
-            AutoDismissToast(modifier = modifier, label = stringResource(id = R.string.game_lost))
-        }
-        is GameEvent.GameWon -> {
-            AutoDismissToast(modifier = modifier, label = gameEvent.message)
-        }
-        GameEvent.IdleState -> {
+fun GameDialog(modifier: Modifier,gameMessage: GameMessage,onDismiss: () ->Unit) {
+    when (gameMessage) {
+        GameMessage.IdleState -> {
             //Todo something later with this event
         }
-        GameEvent.WordTooShort -> {
-            AutoDismissToast(modifier = modifier,label = stringResource(id = R.string.word_too_short))
+        GameMessage.WordTooShort -> {
+            AutoDismissToast(modifier = modifier,label = stringResource(id = R.string.word_too_short), onDismiss = onDismiss)
         }
-        GameEvent.InvalidWord -> {
-            AutoDismissToast(modifier = modifier,label = stringResource(id = R.string.invalid_word))
+        GameMessage.InvalidWord -> {
+            AutoDismissToast(modifier = modifier,label = stringResource(id = R.string.invalid_word), onDismiss = onDismiss)
         }
     }
-    onDismiss.invoke()
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AutoDismissToast(label: String, modifier: Modifier = Modifier) {
+fun AutoDismissToast(label: String, modifier: Modifier = Modifier,onDismiss: () -> Unit) {
     var visible by remember { mutableStateOf(true) }
     LaunchedEffect(label) {
-        delay(3000)
+        delay(1000)
         visible = false
         delay(300)
+        onDismiss.invoke()
     }
 
     AnimatedVisibility(
