@@ -29,7 +29,7 @@ class WordleViewModel(
     val gameEvent: LiveData<GameEvent> = _gameEvent
 
     private val _gameMessageEvent = MutableLiveData<GameMessage>()
-    val gameMessageEvent:LiveData<GameMessage> = _gameMessageEvent
+    val gameMessageEvent: LiveData<GameMessage> = _gameMessageEvent
 
     val keyboardMap = Transformations.map(gameState) {
         it.keyboardState
@@ -91,16 +91,27 @@ class WordleViewModel(
 
                         val newGuess = Guess(
                             word = currentWord.toCharArray(),
-                            letterStats = List(currentWord.length){AlphabetState.CORRECT_POSITION}
+                            letterStats = List(currentWord.length) { AlphabetState.CORRECT_POSITION }
                         )
 
                         val guessList = currentGameState.guess.toMutableList()
-                        guessList.set(currentGameState.guessNumber,newGuess)
+                        guessList.set(currentGameState.guessNumber, newGuess)
 
                         gameState.value =
-                            currentGameState.copy(guessNumber = currentGameState.guessNumber + 1, guess = guessList.toList(), currentWord = null, keyboardState = updateKeyboardState(newGuess))
+                            currentGameState.copy(
+                                guessNumber = currentGameState.guessNumber + 1,
+                                guess = guessList.toList(),
+                                currentWord = null,
+                                keyboardState = updateKeyboardState(newGuess)
+                            )
 
-                        _gameEvent.value = GameEvent.GameWon(currentGameState.guessNumber)
+                        _gameEvent.value = GameEvent.GameWon(
+                            currentGameState.guessNumber,
+                            getGuessGridAsText(
+                                currentGameState.guessNumber + 1,
+                                guessList.toList()
+                            )
+                        )
                         return@launch
                     }
                     is WordStatus.Incorrect -> {
@@ -112,10 +123,15 @@ class WordleViewModel(
                         )
 
                         val guessList = currentGameState.guess.toMutableList()
-                        guessList.set(currentGameState.guessNumber,newGuess)
+                        guessList.set(currentGameState.guessNumber, newGuess)
 
                         gameState.value =
-                            currentGameState.copy(guessNumber = currentGameState.guessNumber + 1, guess = guessList.toList(), currentWord = null, keyboardState = updateKeyboardState(newGuess))
+                            currentGameState.copy(
+                                guessNumber = currentGameState.guessNumber + 1,
+                                guess = guessList.toList(),
+                                currentWord = null,
+                                keyboardState = updateKeyboardState(newGuess)
+                            )
                     }
                 }
             }
@@ -125,35 +141,36 @@ class WordleViewModel(
         }
     }
 
-    private fun updateGameState(newWord:String) {
+    private fun updateGameState(newWord: String) {
         val currentState = gameState.value
         val newGuess = Guess(word = newWord.toGridArray())
         val newList = currentState?.guess?.toMutableList()
-        newList?.set(currentState.guessNumber,newGuess)
+        newList?.set(currentState.guessNumber, newGuess)
         gameState.value = gameState.value?.copy(
             currentWord = newWord,
             guess = newList?.toList() ?: listOf()
         )
     }
+
     private fun updateKeyboardState(guess: Guess): Map<Char, AlphabetState> {
         val keyboardState = gameState.value?.keyboardState?.toMutableMap() ?: return mapOf()
 
         guess.word.forEachIndexed { index, letter ->
-                when (val alphabetState = guess.letterStats[index]) {
-                    AlphabetState.CORRECT_POSITION -> {
-                        keyboardState[letter] = alphabetState
-                    }
-                    AlphabetState.WRONG_POSITION -> {
-                        if (keyboardState[letter] != AlphabetState.CORRECT_POSITION)
-                            keyboardState[letter] = alphabetState
-                    }
-                    AlphabetState.NOT_PRESENT, AlphabetState.NONE -> {
-                        if (keyboardState[letter] != AlphabetState.WRONG_POSITION && keyboardState[letter] != AlphabetState.CORRECT_POSITION) keyboardState[letter] =
-                            alphabetState
-                    }
-
+            when (val alphabetState = guess.letterStats[index]) {
+                AlphabetState.CORRECT_POSITION -> {
+                    keyboardState[letter] = alphabetState
                 }
+                AlphabetState.WRONG_POSITION -> {
+                    if (keyboardState[letter] != AlphabetState.CORRECT_POSITION)
+                        keyboardState[letter] = alphabetState
+                }
+                AlphabetState.NOT_PRESENT, AlphabetState.NONE -> {
+                    if (keyboardState[letter] != AlphabetState.WRONG_POSITION && keyboardState[letter] != AlphabetState.CORRECT_POSITION) keyboardState[letter] =
+                        alphabetState
+                }
+
             }
+        }
 
         return keyboardState
     }
@@ -180,7 +197,7 @@ class WordleViewModel(
 
             when {
                 guessChar == ogChar -> AlphabetState.CORRECT_POSITION
-                ogIndex >=0 && missedCharacters.remove(guessChar) -> AlphabetState.WRONG_POSITION
+                ogIndex >= 0 && missedCharacters.remove(guessChar) -> AlphabetState.WRONG_POSITION
                 else -> AlphabetState.NOT_PRESENT
             }
         }
@@ -206,10 +223,36 @@ class WordleViewModel(
             Guess(CharArray(5) { ' ' })
         )
     }
+
     fun setGameEventIdle() {
         _gameMessageEvent.value = GameMessage.IdleState
     }
 
+    private fun getGuessGridAsText(guessNumber: Int, guessGrid: List<Guess>): String {
+        var shareText = "Wordle $guessNumber/6 \n"
+
+        guessGrid.forEach { guess ->
+            guess.letterStats.forEach { alphabetState ->
+                shareText += when (alphabetState) {
+                    AlphabetState.NONE -> {
+                        ""
+                    }
+                    AlphabetState.NOT_PRESENT -> {
+                        "⬛"
+                    }
+                    AlphabetState.WRONG_POSITION -> {
+                        "\uD83D\uDFE8"
+                    }
+                    AlphabetState.CORRECT_POSITION -> {
+                        "\uD83D\uDFE9"
+                    }
+                }
+            }
+            shareText += "\n"
+        }
+
+        return shareText
+    }
 }
 
 class WordleViewModelFactory(private val wordRepository: WordRepository) :
@@ -221,12 +264,13 @@ class WordleViewModelFactory(private val wordRepository: WordRepository) :
 }
 
 sealed class GameEvent {
-    data class GameWon(val guessNumber: Int): GameEvent()
-    data class GameLost(val originalWord: String): GameEvent()
-    object InitialState: GameEvent()
+    data class GameWon(val guessNumber: Int, val shareText: String) : GameEvent()
+    data class GameLost(val originalWord: String) : GameEvent()
+    object InitialState : GameEvent()
 }
+
 sealed class GameMessage {
-    object InvalidWord: GameMessage()
+    object InvalidWord : GameMessage()
     object WordTooShort : GameMessage()
-    object IdleState: GameMessage()
+    object IdleState : GameMessage()
 }

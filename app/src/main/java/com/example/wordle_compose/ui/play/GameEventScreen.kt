@@ -1,5 +1,7 @@
 package com.example.wordle_compose.ui.play
 
+import android.content.Context
+import android.content.Intent
 import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat.startActivity
 import com.example.wordle_compose.R
 import com.example.wordle_compose.ui.GameEvent
 import com.example.wordle_compose.ui.theme.keyCorrectPlaceBg
@@ -47,7 +51,7 @@ fun GameEventScreen(gameEvent: GameEvent, resetGame: () -> Unit) {
             GameLostDialog(gameEvent.originalWord, resetGame)
         }
         is GameEvent.GameWon -> {
-            GameWonDialog(gameEvent.guessNumber, resetGame)
+            GameWonDialog(gameEvent.guessNumber, gameEvent.shareText, resetGame)
         }
         GameEvent.InitialState -> {}
     }
@@ -114,7 +118,8 @@ fun GameLostDialog(originalWord: String, resetGame: () -> Unit) {
                         Modifier
                             .padding(horizontal = 5.dp)
                             .fillMaxHeight()
-                            .width(2.dp), color = Color.White)
+                            .width(2.dp), color = Color.White
+                    )
                     StatsButton()
                 }
             }
@@ -123,7 +128,7 @@ fun GameLostDialog(originalWord: String, resetGame: () -> Unit) {
 }
 
 @Composable
-fun GameWonDialog(guessNumber: Int, resetGame: () -> Unit) {
+fun GameWonDialog(guessNumber: Int, shareText: String, resetGame: () -> Unit) {
     AlertDialog(
         backgroundColor = Color.Black,
         shape = RoundedCornerShape(8.dp),
@@ -169,13 +174,14 @@ fun GameWonDialog(guessNumber: Int, resetGame: () -> Unit) {
                         Modifier
                             .padding(horizontal = 5.dp)
                             .fillMaxHeight()
-                            .width(2.dp), color = Color.White)
+                            .width(2.dp), color = Color.White
+                    )
                     StatsButton()
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ShareButton(modifier.align(Alignment.CenterHorizontally))
+                ShareButton(modifier.align(Alignment.CenterHorizontally), shareText)
             }
         }
     )
@@ -183,7 +189,10 @@ fun GameWonDialog(guessNumber: Int, resetGame: () -> Unit) {
 
 @Composable
 fun PlayAgainButton(playAgain: () -> Unit) {
-    Button(onClick = { playAgain.invoke() }, colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)) {
+    Button(
+        onClick = { playAgain.invoke() },
+        colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)
+    ) {
         Text(
             text = stringResource(id = R.string.play_again),
             fontWeight = FontWeight.ExtraBold,
@@ -195,7 +204,10 @@ fun PlayAgainButton(playAgain: () -> Unit) {
 
 @Composable
 fun StatsButton() {
-    Button(onClick = {}, colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)) {
+    Button(
+        onClick = {},
+        colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)
+    ) {
         Text(
             text = stringResource(id = R.string.stats_title),
             fontWeight = FontWeight.ExtraBold,
@@ -211,8 +223,20 @@ fun StatsButton() {
 }
 
 @Composable
-fun ShareButton(modifier: Modifier,shareText:String) {
-    Button(modifier = modifier,onClick = {}, colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)) {
+fun ShareButton(modifier: Modifier, shareText: String) {
+    val context = LocalContext.current
+    Button(modifier = modifier, onClick = {
+        startActivity(
+            context,
+            Intent.createChooser(
+                Intent(Intent.ACTION_SEND).putExtra(
+                    Intent.EXTRA_TEXT,
+                    shareText
+                ).apply { type = "text/plain" }, null
+            ),
+            null
+        )
+    }, colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)) {
         Text(
             text = stringResource(id = R.string.share),
             fontWeight = FontWeight.ExtraBold,
@@ -236,5 +260,5 @@ fun GameLostDialogPreview() {
 @Preview
 @Composable
 fun GameWonDialogPreview() {
-    GameWonDialog(4, {})
+    GameWonDialog(4, "", {})
 }
