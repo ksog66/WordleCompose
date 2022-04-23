@@ -9,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,15 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.wordle_compose.R
 import com.example.wordle_compose.ui.GameEvent
 import com.example.wordle_compose.ui.theme.keyCorrectPlaceBg
+
+private val victoryMessages = arrayOf(
+    "Genius",
+    "Magnificent",
+    "Impressive",
+    "Splendid",
+    "Great",
+    "Nice"
+)
 
 @Composable
 fun GameEventScreen(gameEvent: GameEvent, resetGame: () -> Unit) {
@@ -100,7 +110,11 @@ fun GameLostDialog(originalWord: String, resetGame: () -> Unit) {
 
                 Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                     PlayAgainButton(resetGame)
-                    Divider(Modifier.padding(horizontal = 5.dp).fillMaxHeight().width(2.dp), color = Color.White)
+                    Divider(
+                        Modifier
+                            .padding(horizontal = 5.dp)
+                            .fillMaxHeight()
+                            .width(2.dp), color = Color.White)
                     StatsButton()
                 }
             }
@@ -112,7 +126,7 @@ fun GameLostDialog(originalWord: String, resetGame: () -> Unit) {
 fun GameWonDialog(guessNumber: Int, resetGame: () -> Unit) {
     AlertDialog(
         backgroundColor = Color.Black,
-        shape = RoundedCornerShape(80.dp),
+        shape = RoundedCornerShape(8.dp),
         text = null,
         title = null,
         onDismissRequest = { resetGame.invoke() },
@@ -121,7 +135,48 @@ fun GameWonDialog(guessNumber: Int, resetGame: () -> Unit) {
             dismissOnClickOutside = false
         ),
         buttons = {
+            Column(
+                modifier = Modifier.padding(
+                    top = 10.dp,
+                    bottom = 40.dp,
+                    start = 20.dp,
+                    end = 20.dp
+                ), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
+                Image(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable { resetGame.invoke() },
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(id = R.string.close_desc),
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+
+
+                Text(
+                    text = victoryMessages[guessNumber],
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                val modifier = Modifier
+                Row(modifier = modifier.height(IntrinsicSize.Min)) {
+                    PlayAgainButton(resetGame)
+                    Divider(
+                        Modifier
+                            .padding(horizontal = 5.dp)
+                            .fillMaxHeight()
+                            .width(2.dp), color = Color.White)
+                    StatsButton()
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ShareButton(modifier.align(Alignment.CenterHorizontally))
+            }
         }
     )
 }
@@ -156,8 +211,20 @@ fun StatsButton() {
 }
 
 @Composable
-fun ShareButton() {
-
+fun ShareButton(modifier: Modifier,shareText:String) {
+    Button(modifier = modifier,onClick = {}, colors = ButtonDefaults.buttonColors(backgroundColor = keyCorrectPlaceBg)) {
+        Text(
+            text = stringResource(id = R.string.share),
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 15.sp,
+            color = Color.White
+        )
+        Image(
+            imageVector = Icons.Filled.Share,
+            contentDescription = stringResource(id = R.string.share),
+            contentScale = ContentScale.Inside
+        )
+    }
 }
 
 @Preview
