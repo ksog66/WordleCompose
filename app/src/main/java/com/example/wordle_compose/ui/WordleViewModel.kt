@@ -40,7 +40,9 @@ class WordleViewModel(
         it.guess
     }
 
-    val gameStatFlow = preferencesManager.gameStatsFlow
+    val gameStatFlow : StateFlow<GameStats> = preferencesManager.gameStatsFlow.stateIn(viewModelScope,SharingStarted.Lazily,
+        GameStats()
+    )
 
     init {
         initGameState()
@@ -111,7 +113,7 @@ class WordleViewModel(
                             )
 
 
-                            val currentGameStats = GameStats()
+                            val currentGameStats = gameStatFlow.value
                             val gamePlayed = currentGameStats.gamePlayed + 1
                             val gameWon = currentGameStats.gameWon + 1
                             val currentStreak = currentGameStats.currentStreak + 1
@@ -159,7 +161,7 @@ class WordleViewModel(
                 }
             }
             if (gameState.value?.guessNumber == MAX_GUESS_COUNT) {
-                val currentGameStats = GameStats()
+                val currentGameStats = gameStatFlow.value
                 val gamePlayed = currentGameStats.gamePlayed + 1
                 preferencesManager.updateDataStore(
                     currentGameStats.copy(
