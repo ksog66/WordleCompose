@@ -5,6 +5,7 @@ import com.example.wordle_compose.data.repository.WordRepository
 
 interface AppContainer {
     val wordRepository: WordRepository
+    val preferencesManager: PreferencesManager
 }
 
 class AppContainerImpl(
@@ -14,4 +15,6 @@ class AppContainerImpl(
         WordRepository(applicationContext.assets)
     }
 
+    override val preferencesManager: PreferencesManager
+        get() = PreferencesManager(applicationContext)
 }

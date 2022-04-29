@@ -12,6 +12,8 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.datastore.dataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -22,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.wordle_compose.R
 import com.example.wordle_compose.data.AlphabetState
 import com.example.wordle_compose.data.AppContainer
+import com.example.wordle_compose.data.model.GameStats
 import com.example.wordle_compose.data.model.Guess
 import com.example.wordle_compose.ui.GameEvent
 import com.example.wordle_compose.ui.GameMessage
@@ -78,7 +81,7 @@ fun WordleNavHost(
     openDrawer: () -> Unit = {}
 ) {
     val wordleViewModel: WordleViewModel = viewModel(
-        factory = WordleViewModelFactory(appContainer.wordRepository)
+        factory = WordleViewModelFactory(appContainer.wordRepository,appContainer.preferencesManager)
     )
 
     NavHost(
@@ -117,7 +120,10 @@ fun WordleNavHost(
         }
 
         composable(WordleDrawerTab.STATISTICS.name) {
-            StatisticsRoute()
+
+            val gameStats:GameStats = wordleViewModel.gameStatFlow.collectAsState(initial = GameStats(gamePlayed = 10)).value
+
+            StatisticsRoute(gameStats)
         }
     }
 }
