@@ -40,9 +40,7 @@ class WordleViewModel(
         it.guess
     }
 
-    val gameStatFlow : StateFlow<GameStats> = preferencesManager.gameStatsFlow.stateIn(viewModelScope,SharingStarted.Lazily,
-        GameStats()
-    )
+    val gameStatFlow = preferencesManager.gameStatsFlow
 
     init {
         initGameState()
@@ -104,38 +102,41 @@ class WordleViewModel(
                         val guessList = currentGameState.guess.toMutableList()
                         guessList.set(currentGameState.guessNumber, newGuess)
 
+                        val newGuessIndex = currentGameState.guessNumber + 1
+
                         gameState.value =
                             currentGameState.copy(
-                                guessNumber = currentGameState.guessNumber + 1,
+                                guessNumber = newGuessIndex,
                                 guess = guessList.toList(),
                                 currentWord = null,
                                 keyboardState = updateKeyboardState(newGuess)
                             )
 
 
-                            val currentGameStats = gameStatFlow.value
-                            val gamePlayed = currentGameStats.gamePlayed + 1
-                            val gameWon = currentGameStats.gameWon + 1
-                            val currentStreak = currentGameStats.currentStreak + 1
-                            val maxStreak =
-                                if (currentStreak > currentGameStats.maxStreak) currentStreak else currentGameStats.maxStreak
-                            currentGameStats.guessFrequency[currentGameState.guessNumber].inc()
-                            preferencesManager.updateDataStore(
-                                currentGameStats.copy(
-                                    gamePlayed = gamePlayed,
-                                    gameWon = gameWon,
-                                    currentStreak = currentStreak,
-                                    maxStreak = maxStreak
-                                )
+                        val currentGameStats = gameStatFlow.last()
+                        val gamePlayed = currentGameStats.gamePlayed + 1
+                        val gameWon = currentGameStats.gameWon + 1
+                        val currentStreak = currentGameStats.currentStreak + 1
+                        val maxStreak =
+                            if (currentStreak > currentGameStats.maxStreak) currentStreak else currentGameStats.maxStreak
+                        val increasedGuess = currentGameStats.guessFrequency[currentGameState.guessNumber] + 1
+                        currentGameStats.guessFrequency.set(currentGameState.guessNumber,increasedGuess)
+                        preferencesManager.updateDataStore(
+                            currentGameStats.copy(
+                                gamePlayed = gamePlayed,
+                                gameWon = gameWon,
+                                currentStreak = currentStreak,
+                                maxStreak = maxStreak
                             )
+                        )
 
-                            _gameEvent.value = GameEvent.GameWon(
-                                currentGameState.guessNumber,
-                                getGuessGridAsText(
-                                    currentGameState.guessNumber + 1,
-                                    guessList.toList()
-                                )
+                        _gameEvent.value = GameEvent.GameWon(
+                            currentGameState.guessNumber,
+                            getGuessGridAsText(
+                                newGuessIndex,
+                                guessList.toList()
                             )
+                        )
 
                         return@launch
                     }
@@ -161,7 +162,7 @@ class WordleViewModel(
                 }
             }
             if (gameState.value?.guessNumber == MAX_GUESS_COUNT) {
-                val currentGameStats = gameStatFlow.value
+                val currentGameStats = gameStatFlow.last()
                 val gamePlayed = currentGameStats.gamePlayed + 1
                 preferencesManager.updateDataStore(
                     currentGameStats.copy(

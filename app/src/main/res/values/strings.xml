@@ -20,8 +20,10 @@
     <string name="close_desc">Close Dialog</string>
     <string name="share">Share</string>
 
-    <string name="game_played">Game Played</string>
+    <string name="game_played">Played</string>
     <string name="win_percentage">Win %</string>
     <string name="current_streak">Current Streak</string>
     <string name="max_streak">Max Streak</string>
+
+    <string name="guess_distribution">Guess Distribution</string>
 </resources>

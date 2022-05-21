@@ -121,7 +121,7 @@ fun WordleNavHost(
 
         composable(WordleDrawerTab.STATISTICS.name) {
 
-            val gameStats:GameStats = wordleViewModel.gameStatFlow.collectAsState(initial = GameStats(gamePlayed = 10)).value
+            val gameStats:GameStats = wordleViewModel.gameStatFlow.collectAsState(initial = GameStats()).value
 
             StatisticsRoute(gameStats)
         }

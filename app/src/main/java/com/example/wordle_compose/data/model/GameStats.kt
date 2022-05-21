@@ -11,5 +11,5 @@ data class GameStats(
     val gameWon: Int = 0,
     val currentStreak: Int = 0,
     val maxStreak: Int = 0,
-    val guessFrequency: List<Int> = List(6) {0}
+    val guessFrequency: PersistentList<Int> = persistentListOf(0,0,0,0,0,0)
 )
