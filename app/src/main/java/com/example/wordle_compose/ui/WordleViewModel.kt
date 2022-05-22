@@ -1,5 +1,6 @@
 package com.example.wordle_compose.ui
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.wordle_compose.data.AlphabetState
 import com.example.wordle_compose.data.GameState
@@ -13,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+
+private const val TAG = "WordleViewModel"
 class WordleViewModel(
     private val wordRepository: WordRepository,
     private val preferencesManager: PreferencesManager
@@ -111,25 +114,33 @@ class WordleViewModel(
                                 currentWord = null,
                                 keyboardState = updateKeyboardState(newGuess)
                             )
+                        Log.d(TAG, "before updating gameFlow Thread ${Thread.currentThread()} ")
 
+                        launch(Dispatchers.IO) {
 
-                        val currentGameStats = gameStatFlow.last()
-                        val gamePlayed = currentGameStats.gamePlayed + 1
-                        val gameWon = currentGameStats.gameWon + 1
-                        val currentStreak = currentGameStats.currentStreak + 1
-                        val maxStreak =
-                            if (currentStreak > currentGameStats.maxStreak) currentStreak else currentGameStats.maxStreak
-                        val increasedGuess = currentGameStats.guessFrequency[currentGameState.guessNumber] + 1
-                        currentGameStats.guessFrequency.set(currentGameState.guessNumber,increasedGuess)
-                        preferencesManager.updateDataStore(
-                            currentGameStats.copy(
-                                gamePlayed = gamePlayed,
-                                gameWon = gameWon,
-                                currentStreak = currentStreak,
-                                maxStreak = maxStreak
+                            Log.d(TAG, "in launch where updating the gameFlow ${Thread.currentThread()}")
+                            val currentGameStats = gameStatFlow.first()
+                            val gamePlayed = currentGameStats.gamePlayed + 1
+                            val gameWon = currentGameStats.gameWon + 1
+                            val currentStreak = currentGameStats.currentStreak + 1
+                            val maxStreak =
+                                if (currentStreak > currentGameStats.maxStreak) currentStreak else currentGameStats.maxStreak
+
+                            val guessFrequencyList = currentGameStats.guessFrequency.toMutableList()
+                            val increasedGuess = guessFrequencyList[currentGameState.guessNumber] + 1
+
+                            guessFrequencyList.set(currentGameState.guessNumber,increasedGuess)
+                            Log.d(TAG, "submitAnswer: $guessFrequencyList $increasedGuess $currentGameState $currentGameStats")
+                            preferencesManager.updateDataStore(
+                                currentGameStats.copy(
+                                    gamePlayed = gamePlayed,
+                                    gameWon = gameWon,
+                                    currentStreak = currentStreak,
+                                    maxStreak = maxStreak,
+                                    guessFrequency = guessFrequencyList
+                                )
                             )
-                        )
-
+                        }
                         _gameEvent.value = GameEvent.GameWon(
                             currentGameState.guessNumber,
                             getGuessGridAsText(
@@ -162,14 +173,16 @@ class WordleViewModel(
                 }
             }
             if (gameState.value?.guessNumber == MAX_GUESS_COUNT) {
-                val currentGameStats = gameStatFlow.last()
-                val gamePlayed = currentGameStats.gamePlayed + 1
-                preferencesManager.updateDataStore(
-                    currentGameStats.copy(
-                        gamePlayed = gamePlayed,
-                        currentStreak = 0
+                launch(Dispatchers.IO) {
+                    val currentGameStats = gameStatFlow.first()
+                    val gamePlayed = currentGameStats.gamePlayed + 1
+                    preferencesManager.updateDataStore(
+                        currentGameStats.copy(
+                            gamePlayed = gamePlayed,
+                            currentStreak = 0
+                        )
                     )
-                )
+                }
                 _gameEvent.value = GameEvent.GameLost(gameState.value!!.originalAnswer)
             }
         }

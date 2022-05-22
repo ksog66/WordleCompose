@@ -1,27 +1,39 @@
 package com.example.wordle_compose.ui.statistics
 
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateRectAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordle_compose.R
 import com.example.wordle_compose.data.model.GameStats
-import com.example.wordle_compose.ui.theme.keyCorrectPlaceBg
 import com.example.wordle_compose.ui.theme.keyIdleBackgroundDark
+
+private const val TAG = "StatisticsRoute"
 
 @Composable
 fun StatisticsRoute(gameStats: GameStats) {
@@ -61,7 +73,7 @@ fun StatisticsRoute(gameStats: GameStats) {
         
         Spacer(modifier = Modifier
             .fillMaxWidth()
-            .height(5.dp))
+            .height(20.dp))
 
         GuessDistribution(gameStats.guessFrequency)
     }
@@ -70,7 +82,7 @@ fun StatisticsRoute(gameStats: GameStats) {
 @Composable
 fun GameStatsRow(gameStats: GameStats) {
     val gameWinPercentage =
-        if (gameStats.gamePlayed == 0) 0 else (gameStats.gameWon / gameStats.gamePlayed) * 100
+        if (gameStats.gamePlayed == 0) 0 else (gameStats.gameWon.toFloat() / gameStats.gamePlayed.toFloat()) * 100
     Row(
         modifier = Modifier
             .padding(vertical = 5.dp)
@@ -83,7 +95,7 @@ fun GameStatsRow(gameStats: GameStats) {
             label = stringResource(id = R.string.game_played)
         )
         StatsComponent(
-            value = gameWinPercentage,
+            value = gameWinPercentage.toInt(),
             label = stringResource(id = R.string.win_percentage)
         )
         StatsComponent(
@@ -123,26 +135,48 @@ fun StatsComponent(value: Int, label: String) {
 
 @Composable
 fun GuessDistribution(guessFrequency: List<Int>) {
-    Column {
+    Log.d(TAG, "GuessDistribution: $guessFrequency")
+    Column() {
         guessFrequency.forEachIndexed { index, value ->
             GuessHorizontalBar(index+1,value+1)
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(5.dp))
         }
     }
 }
 
 @Composable
 fun GuessHorizontalBar(index:Int,barSize:Int) {
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Log.d(TAG, "GuessHorizontalBar: $barSize")
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             modifier = Modifier.width(IntrinsicSize.Min),
             text = index.toString(),
             color = Color.Black,
-            fontSize = 10.sp
+            fontSize = 15.sp
         )
-        
-        Canvas(modifier = Modifier.width((barSize*2).dp).height(20.dp).background(Color.White)) {
-            drawRect(color = keyIdleBackgroundDark, topLeft = Offset(0f,1f),size = size)
+
+        Spacer(modifier = Modifier
+            .height(1.dp)
+            .width(2.dp))
+        val barWidth = barSize * 20
+
+        val paint = Paint().apply {
+            textAlign = Paint.Align.CENTER
+            textSize = 40f
+            color = Color.White.toArgb()
         }
-        
+
+        val xPos = if(barSize == 1) barWidth/4 else barWidth - 10
+
+        Canvas(modifier = Modifier
+            .width(animateDpAsState(targetValue = barWidth.dp).value)
+            .height(30.dp)
+            .background(Color.White)) {
+            drawRect(color = keyIdleBackgroundDark, topLeft = Offset(0f,1f),size = size)
+            drawContext.canvas.nativeCanvas.drawText("${barSize-1}",center.x+xPos,center.y+15,paint)
+        }
     }
 }
